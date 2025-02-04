@@ -13,9 +13,9 @@ public class Pedido {
     private final int quantidade;
     private final LocalDate data;
 
-    public Pedido(String categoria, String produto, String cliente, BigDecimal preco, int quantidade, LocalDate data) {
-        this.categoria = Objects.requireNonNull(categoria, "Categoria não pode ser nula");
+    public Pedido(String produto, String categoria, String cliente, BigDecimal preco, int quantidade, LocalDate data) {
         this.produto = Objects.requireNonNull(produto, "Produto não pode ser nulo");
+        this.categoria = Objects.requireNonNull(categoria, "Categoria não pode ser nula");
         this.cliente = Objects.requireNonNull(cliente, "Cliente não pode ser nulo");
         this.preco = Objects.requireNonNull(preco, "Preço não pode ser nulo");
         this.quantidade = quantidade;

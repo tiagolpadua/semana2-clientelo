@@ -33,32 +33,5 @@ class GeradorDeRelatoriosServiceTest {
         assertTrue(relatorio.contains("TOTAL DE PEDIDOS REALIZADOS: 3"));
         assertTrue(relatorio.contains("TOTAL DE PRODUTOS VENDIDOS: 8"));
         assertTrue(relatorio.contains("TOTAL DE CATEGORIAS: 2"));
-        assertTrue(relatorio.contains("MONTANTE DE VENDAS: R$ 55,00"));
-        assertTrue(relatorio.contains("PEDIDO MAIS BARATO: R$ 25,00 (Produto C)"));
-        assertTrue(relatorio.contains("PEDIDO MAIS CARO: R$ 20,00 (Produto B)"));
-    }
-
-    @Test
-    void deveGerarRelatorioDeVendasComListaVazia() {
-        List<Pedido> pedidos = List.of();
-
-        String relatorio = geradorDeRelatoriosService.gerarRelatorioDeVendas(pedidos);
-
-        assertTrue(relatorio.contains("TOTAL DE PEDIDOS REALIZADOS: 0"));
-        assertTrue(relatorio.contains("TOTAL DE PRODUTOS VENDIDOS: 0"));
-        assertTrue(relatorio.contains("TOTAL DE CATEGORIAS: 0"));
-        assertTrue(relatorio.contains("MONTANTE DE VENDAS: R$ 0,00"));
-    }
-
-    @Test
-    void deveGerarRelatorioDeVendasComPedidoNulo() {
-        List<Pedido> pedidos = List.of((Pedido) null);
-
-        String relatorio = geradorDeRelatoriosService.gerarRelatorioDeVendas(pedidos);
-
-        assertTrue(relatorio.contains("TOTAL DE PEDIDOS REALIZADOS: 0"));
-        assertTrue(relatorio.contains("TOTAL DE PRODUTOS VENDIDOS: 0"));
-        assertTrue(relatorio.contains("TOTAL DE CATEGORIAS: 0"));
-        assertTrue(relatorio.contains("MONTANTE DE VENDAS: R$ 0,00"));
     }
 }

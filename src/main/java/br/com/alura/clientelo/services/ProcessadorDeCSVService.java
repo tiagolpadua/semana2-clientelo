@@ -48,6 +48,6 @@ public class ProcessadorDeCSVService {
         var data = LocalDate.parse(registro[4], DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         var cliente = registro[5];
 
-        return new Pedido(categoria, produto, cliente, preco, quantidade, data);
+        return new Pedido(produto, categoria, cliente, preco, quantidade, data);
     }
 }
