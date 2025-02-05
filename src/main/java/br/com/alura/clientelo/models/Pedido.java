@@ -4,14 +4,21 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Pedido {
 
-    private final String categoria;
-    private final String produto;
-    private final String cliente;
-    private final BigDecimal preco;
-    private final int quantidade;
-    private final LocalDate data;
+    private String categoria;
+    private String produto;
+    private String cliente;
+    private BigDecimal preco;
+    private int quantidade;
+
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate data;
+
+    public Pedido() {
+    }
 
     public Pedido(String produto, String categoria, String cliente, BigDecimal preco, int quantidade, LocalDate data) {
         this.produto = Objects.requireNonNull(produto, "Produto não pode ser nulo");
