@@ -3,26 +3,21 @@ package br.com.alura.clientelo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
-import java.util.Scanner;
+import java.util.Set;
 
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
-        Pedido[] pedidos = ProcessadorDeCsv.processaArquivo("pedidos.csv");
+    public static void main(String[] args) {
+        ProcessadorDeCsv processador = new ProcessadorDeCsv();
+        List<Pedido> pedidos = processador.processaArquivo("pedidos.csv");
 
         int totalDeProdutosVendidos = 0;
         int totalDePedidosRealizados = 0;
@@ -30,12 +25,9 @@ public class Main {
         Pedido pedidoMaisBarato = null;
         Pedido pedidoMaisCaro = null;
 
-        String[] categoriasProcessadas = new String[10];
-        int totalDeCategorias = 0;
+        Set<String> categoriasProcessadas = new HashSet<>();
 
-        for (int i = 0; i < pedidos.length; i++) {
-            Pedido pedidoAtual = pedidos[i];
-
+        for (Pedido pedidoAtual : pedidos) {
             if (pedidoAtual == null) {
                 break;
             }
@@ -52,38 +44,25 @@ public class Main {
             totalDeProdutosVendidos += pedidoAtual.getQuantidade();
             totalDePedidosRealizados++;
 
-            boolean jahProcessouCategoria = false;
-            for (int j = 0; j < categoriasProcessadas.length; j++) {
-                if (pedidoAtual.getCategoria().equalsIgnoreCase(categoriasProcessadas[j])) {
-                    jahProcessouCategoria = true;
-                }
-            }
-
-            if (!jahProcessouCategoria) {
-                totalDeCategorias++;
-
-                if (categoriasProcessadas[categoriasProcessadas.length - 1] != null) {
-                    categoriasProcessadas = Arrays.copyOf(categoriasProcessadas, categoriasProcessadas.length * 2);
-                } else {
-                    for (int k = 0; k < categoriasProcessadas.length; k++) {
-                        if (categoriasProcessadas[k] == null) {
-                            categoriasProcessadas[k] = pedidoAtual.getCategoria();
-                            break;
-                        }
-                    }
-                }
-            }
+            categoriasProcessadas.add(pedidoAtual.getCategoria());
         }
 
         logger.info("##### RELATÓRIO DE VALORES TOTAIS #####");
 
         logger.info("TOTAL DE PEDIDOS REALIZADOS: {}", totalDePedidosRealizados);
         logger.info("TOTAL DE PRODUTOS VENDIDOS: {}", totalDeProdutosVendidos);
-        logger.info("TOTAL DE CATEGORIAS: {}", totalDeCategorias);
+        logger.info("TOTAL DE CATEGORIAS: {}", categoriasProcessadas.size());
 
-        logger.info("MONTANTE DE VENDAS: {}", NumberFormat.getCurrencyInstance(new Locale("pt", "BR")).format(montanteDeVendas.setScale(2, RoundingMode.HALF_DOWN)));
-        logger.info("PEDIDO MAIS BARATO: {} ({})", NumberFormat.getCurrencyInstance(new Locale("pt", "BR")).format(pedidoMaisBarato.getPreco().multiply(new BigDecimal(pedidoMaisBarato.getQuantidade())).setScale(2, RoundingMode.HALF_DOWN)), pedidoMaisBarato.getProduto());
-        logger.info("PEDIDO MAIS CARO: {} ({})\n", NumberFormat.getCurrencyInstance(new Locale("pt", "BR")).format(pedidoMaisCaro.getPreco().multiply(new BigDecimal(pedidoMaisCaro.getQuantidade())).setScale(2, RoundingMode.HALF_DOWN)), pedidoMaisCaro.getProduto());
+        NumberFormat currencyInstance = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+
+        logger.info("MONTANTE DE VENDAS: {}", currencyInstance.format(montanteDeVendas.setScale(2, RoundingMode.HALF_DOWN)));
+        if (pedidoMaisBarato != null) {
+            logger.info("PEDIDO MAIS BARATO: {} ({})", currencyInstance.format(pedidoMaisBarato.getPreco().multiply(new BigDecimal(pedidoMaisBarato.getQuantidade())).setScale(2, RoundingMode.HALF_DOWN)), pedidoMaisBarato.getProduto());
+        }
+
+        if (pedidoMaisCaro != null) {
+            logger.info("PEDIDO MAIS CARO: {} ({})\n", currencyInstance.format(pedidoMaisCaro.getPreco().multiply(new BigDecimal(pedidoMaisCaro.getQuantidade())).setScale(2, RoundingMode.HALF_DOWN)), pedidoMaisCaro.getProduto());
+        }
 
         logger.info("### FIM DO RELATÓRIO ###");
     }
