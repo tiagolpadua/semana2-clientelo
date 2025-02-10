@@ -1,69 +1,45 @@
 package br.com.alura.clientelo;
 
+import br.com.alura.clientelo.models.Pedido;
+import br.com.alura.clientelo.services.ProcessadorDeArquivoService;
+import br.com.alura.clientelo.services.RelatorioService;
+import br.com.alura.clientelo.services.processadores.ProcessadorDeCSV;
+import br.com.alura.clientelo.services.processadores.ProcessadorDeJSON;
+import br.com.alura.clientelo.services.processadores.ProcessadorDeXML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        ProcessadorDeCsv processador = new ProcessadorDeCsv();
-        List<Pedido> pedidos = processador.processaArquivo("pedidos.csv");
+        ProcessadorDeArquivoService processador = new ProcessadorDeArquivoService();
 
-        int totalDeProdutosVendidos = 0;
-        int totalDePedidosRealizados = 0;
-        BigDecimal montanteDeVendas = BigDecimal.ZERO;
-        Pedido pedidoMaisBarato = null;
-        Pedido pedidoMaisCaro = null;
+        var  nomeDoArquivo = "pedidos.json";
 
-        Set<String> categoriasProcessadas = new HashSet<>();
+        String extensao = nomeDoArquivo.substring(nomeDoArquivo.lastIndexOf('.') + 1);
 
-        for (Pedido pedidoAtual : pedidos) {
-            if (pedidoAtual == null) {
-                break;
+        switch (extensao) {
+            case "csv" -> {
+                processador.setProcessador(new ProcessadorDeCSV());
             }
-
-            if (pedidoMaisBarato == null || pedidoAtual.getPreco().multiply(new BigDecimal(pedidoAtual.getQuantidade())).compareTo(pedidoMaisBarato.getPreco().multiply(new BigDecimal(pedidoMaisBarato.getQuantidade()))) < 0) {
-                pedidoMaisBarato = pedidoAtual;
+            case "json" -> {
+                processador.setProcessador(new ProcessadorDeJSON());
             }
-
-            if (pedidoMaisCaro == null || pedidoAtual.getPreco().multiply(new BigDecimal(pedidoAtual.getQuantidade())).compareTo(pedidoMaisCaro.getPreco().multiply(new BigDecimal(pedidoMaisCaro.getQuantidade()))) > 0) {
-                pedidoMaisCaro = pedidoAtual;
+            case "xml" -> {
+                processador.setProcessador(new ProcessadorDeXML());
             }
-
-            montanteDeVendas = montanteDeVendas.add(pedidoAtual.getPreco().multiply(new BigDecimal(pedidoAtual.getQuantidade())));
-            totalDeProdutosVendidos += pedidoAtual.getQuantidade();
-            totalDePedidosRealizados++;
-
-            categoriasProcessadas.add(pedidoAtual.getCategoria());
+            default -> {
+                throw new RuntimeException("Formato de arquivo não suportado: " + extensao);
+            }
         }
 
-        logger.info("##### RELATÓRIO DE VALORES TOTAIS #####");
+        List<Pedido> pedidos = processador.processaArquivo(nomeDoArquivo);
 
-        logger.info("TOTAL DE PEDIDOS REALIZADOS: {}", totalDePedidosRealizados);
-        logger.info("TOTAL DE PRODUTOS VENDIDOS: {}", totalDeProdutosVendidos);
-        logger.info("TOTAL DE CATEGORIAS: {}", categoriasProcessadas.size());
-
-        NumberFormat currencyInstance = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
-
-        logger.info("MONTANTE DE VENDAS: {}", currencyInstance.format(montanteDeVendas.setScale(2, RoundingMode.HALF_DOWN)));
-        if (pedidoMaisBarato != null) {
-            logger.info("PEDIDO MAIS BARATO: {} ({})", currencyInstance.format(pedidoMaisBarato.getPreco().multiply(new BigDecimal(pedidoMaisBarato.getQuantidade())).setScale(2, RoundingMode.HALF_DOWN)), pedidoMaisBarato.getProduto());
-        }
-
-        if (pedidoMaisCaro != null) {
-            logger.info("PEDIDO MAIS CARO: {} ({})\n", currencyInstance.format(pedidoMaisCaro.getPreco().multiply(new BigDecimal(pedidoMaisCaro.getQuantidade())).setScale(2, RoundingMode.HALF_DOWN)), pedidoMaisCaro.getProduto());
-        }
-
-        logger.info("### FIM DO RELATÓRIO ###");
+        RelatorioService relatorioService = new RelatorioService();
+        relatorioService.gerar(pedidos);
     }
 }
