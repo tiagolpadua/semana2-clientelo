@@ -1,29 +1,24 @@
-package br.com.alura.clientelo;
+package br.com.alura.clientelo.services.processadores;
 
+import br.com.alura.clientelo.interfaces.Processador;
+import br.com.alura.clientelo.models.Pedido;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class ProcessadorDeCsv {
-
-    public List<Pedido> processaArquivo(String nomeDoArquivo) {
-        try {
-            URL recursoCSV = ClassLoader.getSystemResource(nomeDoArquivo);
-            Path caminhoDoArquivo = Path.of(recursoCSV.toURI());
-
-            var registros = readAllLines(caminhoDoArquivo);
-
-            return registros.stream()
+public class ProcessadorCSV implements Processador {
+    public List<Pedido> processar(Path filePath) {
+        try (Reader reader = Files.newBufferedReader(filePath);
+             CSVReader csvReader = new CSVReader(reader)) {
+            return csvReader.readAll().stream()
                     .skip(1)
                     .map(registro -> {
                         String categoria = registro[0];
@@ -34,16 +29,6 @@ public class ProcessadorDeCsv {
                         String cliente = registro[5];
                         return new Pedido(categoria, produto, cliente, preco, quantidade, data);
                     }).toList();
-
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(String.format("Arquivo %s não localizado!", nomeDoArquivo));
-        }
-    }
-
-    private List<String[]> readAllLines(Path filePath) {
-        try (Reader reader = Files.newBufferedReader(filePath);
-             CSVReader csvReader = new CSVReader(reader)) {
-                return csvReader.readAll();
         } catch (IOException | CsvException e) {
             throw new RuntimeException(e);
         }
